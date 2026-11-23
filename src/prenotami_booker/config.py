@@ -1,5 +1,4 @@
 """Configuration management for Prenotami Booker."""
-
 from __future__ import annotations
 
 import os
@@ -16,6 +15,7 @@ logger = structlog.get_logger()
 # London consulate defaults
 DEFAULT_RELEASE_DAYS = ["monday", "wednesday"]
 DEFAULT_RELEASE_TIME = "17:00"  # GMT/UTC
+DEFAULT_TIMEZONE = "UTC"
 DEFAULT_TIMING_OFFSET_SECONDS = -2  # Click 2 seconds before release
 DEFAULT_CALENDAR_MONTHS_AHEAD = 3
 DEFAULT_OTP_PREFETCH_SECONDS = 120  # Generate OTP 2 minutes before
@@ -64,6 +64,7 @@ class ConsulateConfig:
     calendar_months_ahead: int = DEFAULT_CALENDAR_MONTHS_AHEAD
     otp_prefetch_seconds: int = DEFAULT_OTP_PREFETCH_SECONDS
     service_type: str = "citizenship"
+    timezone: str = DEFAULT_TIMEZONE
 
 
 @dataclass(frozen=True)
@@ -121,13 +122,11 @@ def load_config(config_path: str | None = None, env_path: str | None = None) -> 
     prenotami_defaults = yaml_config.get("prenotami", {})
     prenotami_email = os.getenv("PRENOTAMI_EMAIL", prenotami_defaults.get("email", ""))
     prenotami_password = os.getenv("PRENOTAMI_PASSWORD", prenotami_defaults.get("password", ""))
-
     if not prenotami_email or not prenotami_password:
         raise ValueError(
             "Prenot@mi credentials required. Set PRENOTAMI_EMAIL and PRENOTAMI_PASSWORD "
             "in .env or config.yaml"
         )
-
     prenotami_creds = PrenotamiCredentials(email=prenotami_email, password=prenotami_password)
 
     # Build email config for OTP
@@ -170,6 +169,9 @@ def load_config(config_path: str | None = None, env_path: str | None = None) -> 
             consulate_raw.get("otp_prefetch_seconds", DEFAULT_OTP_PREFETCH_SECONDS)
         ),
         service_type=consulate_raw.get("service_type", "citizenship"),
+        timezone=consulate_raw.get(
+            "timezone", os.getenv("PRENOTAMI_TIMEZONE", DEFAULT_TIMEZONE)
+        ),
     )
 
     # Build browser config
@@ -188,7 +190,6 @@ def load_config(config_path: str | None = None, env_path: str | None = None) -> 
         consulate=consulate_config,
         browser=browser_config,
     )
-
     logger.info(
         "config_loaded",
         correlation_id=correlation_id,
@@ -196,6 +197,6 @@ def load_config(config_path: str | None = None, env_path: str | None = None) -> 
         service=config.consulate.service_type,
         release_days=config.consulate.release_days,
         release_time=config.consulate.release_time,
+        timezone=config.consulate.timezone,
     )
-
     return config
