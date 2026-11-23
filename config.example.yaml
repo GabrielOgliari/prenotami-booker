@@ -8,47 +8,43 @@ prenotami:
   password: "your-prenotami-password"
 
 # Email settings for OTP retrieval (IMAP)
-# The bot reads OTP codes from your email inbox
-#
-# Option A - OAuth2 (recommended): Run 'prenotami auth' to sign in via browser.
-#   No password needed — just set your email address and use_oauth: true.
-#   Requires client_secret.json from Google Cloud Console.
-#
-# Option B - App password: Set use_oauth: false and provide password.
 email:
-  imap_server: "imap.gmail.com"   # Gmail, Outlook: outlook.office365.com
+  imap_server: "imap.gmail.com"
   imap_port: 993
-  email: "your-email@example.com"  # Same as prenotami email if shared
-  # password: "your-email-app-password"  # Only needed if use_oauth is false
+  email: "your-email@example.com"
+  # password: "your-email-app-password"
   use_ssl: true
-  use_oauth: true                  # Sign in via browser (run 'prenotami auth')
+  use_oauth: true
 
-# Notification settings (optional)
-# Get notified when a booking succeeds or fails
+# Optional success/failure notifications
 notification:
-  smtp_server: "smtp.gmail.com"     # Gmail, Outlook: smtp.office365.com
+  smtp_server: "smtp.gmail.com"
   smtp_port: 587
   smtp_email: "your-email@example.com"
   smtp_password: "your-email-app-password"
-  notify_email: "your-email@example.com"  # Where to send notifications
+  notify_email: "your-email@example.com"
   use_tls: true
 
-# Consulate configuration
-# Defaults are for the London consulate
+# Release schedule: midnight in Rome, Monday through Thursday.
+# The timezone-aware scheduler converts this to UTC automatically,
+# including daylight-saving changes in Europe/Rome.
 consulate:
-  name: "London"
+  name: "Prenot@mi"
   release_days:
     - "monday"
+    - "tuesday"
     - "wednesday"
-  release_time: "17:00"              # UTC/GMT
-  timing_offset_seconds: -2          # Click 2 seconds BEFORE release
-  calendar_months_ahead: 3           # Skip this many months in calendar
-  otp_prefetch_seconds: 120          # Generate OTP 2 min before release
-  service_type: "citizenship"        # citizenship or passport
+    - "thursday"
+  release_time: "00:00"
+  timezone: "Europe/Rome"
+  timing_offset_seconds: -2
+  calendar_months_ahead: 3
+  otp_prefetch_seconds: 120
+  service_type: "citizenship"
 
-# Browser settings
+# Browser settings for the server
 browser:
-  headless: false                    # Set true for background/server mode
+  headless: true
   browser: "chrome"
-  implicit_wait: 10                  # Seconds to wait for elements
-  page_load_timeout: 30              # Max seconds for page load
+  implicit_wait: 10
+  page_load_timeout: 30
